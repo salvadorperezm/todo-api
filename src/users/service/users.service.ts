@@ -60,4 +60,13 @@ export class UsersService {
     });
     return await this.listsRepository.save(newTask);
   }
+
+  async getAllLists(userId: number, requestId: number) {
+    const user = await this.verifyUser(userId, requestId);
+    const relations = await this.usersRepository.findOne(user.id, {
+      relations: ['lists'],
+    });
+
+    return relations.lists;
+  }
 }

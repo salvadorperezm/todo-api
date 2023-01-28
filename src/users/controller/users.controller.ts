@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Get,
   Param,
   ParseIntPipe,
   Post,
@@ -29,5 +30,14 @@ export class UsersController {
     @Body() payload: CreateListDto,
   ) {
     return this.usersService.createList(userId, request.user.id, payload);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/lists')
+  getAllLists(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Request() request,
+  ) {
+    return this.usersService.getAllLists(userId, request.user.id);
   }
 }
