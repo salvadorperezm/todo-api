@@ -35,6 +35,17 @@ export class UsersService {
     return await this.usersRepository.findOne(userId);
   }
 
+  async verifyList(user: User, listId: number) {
+    const list = await this.listsRepository.findOne(listId, {
+      relations: ['user'],
+    });
+
+    if (!list || list.user.id !== user.id) {
+      throw new UnauthorizedException();
+    }
+    return await this.listsRepository.findOne(listId);
+  }
+
   async createUser(payload: CreateUserDto) {
     const existingUser = await this.findUserByUsername(payload.username);
 
@@ -68,5 +79,10 @@ export class UsersService {
     });
 
     return relations.lists;
+  }
+
+  async getOneList(userId: number, requestId: number, listId: number) {
+    const user = await this.verifyUser(userId, requestId);
+    return await this.verifyList(user, listId);
   }
 }

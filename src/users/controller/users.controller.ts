@@ -40,4 +40,14 @@ export class UsersController {
   ) {
     return this.usersService.getAllLists(userId, request.user.id);
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/lists/:listId')
+  getOneList(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Request() request,
+  ) {
+    return this.usersService.getOneList(userId, request.user.id, listId);
+  }
 }
