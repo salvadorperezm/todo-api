@@ -9,6 +9,7 @@ import { CreateListDto } from 'src/lists/dto/lists.dto';
 import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
 import { List } from 'src/lists/entity/lists.entity';
 import { CreateTaskDto } from 'src/tasks/dto/task.dto';
+import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
 import { Task } from 'src/tasks/entity/tasks.entity';
 import { hashPassword } from 'src/utils/bcrypt';
 import { Repository } from 'typeorm';
@@ -156,5 +157,26 @@ export class UsersService {
     const user = await this.verifyUser(userId, requestId);
     const list = await this.verifyListBelongsToUser(user, listId);
     return await this.verifyTaskBelongsToList(list, taskId);
+  }
+
+  async updateOneTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    taskId: number,
+    payload: UpdateTaskDto,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    const task = await this.verifyTaskBelongsToList(list, taskId);
+    return await this.tasksRepository.update(
+      {
+        id: task.id,
+      },
+      {
+        title: payload.title,
+        isCompleted: payload.isCompleted,
+      },
+    );
   }
 }

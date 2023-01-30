@@ -14,6 +14,7 @@ import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateListDto } from 'src/lists/dto/lists.dto';
 import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
 import { CreateTaskDto } from 'src/tasks/dto/task.dto';
+import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
 import { CreateUserDto } from '../dto/users.dto';
 import { UsersService } from '../service/users.service';
 
@@ -120,6 +121,24 @@ export class UsersController {
       request.user.id,
       listId,
       taskId,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':userId/lists/:listId/tasks/:taskId')
+  updateOneTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Request() request,
+    @Body() payload: UpdateTaskDto,
+  ) {
+    return this.usersService.updateOneTask(
+      userId,
+      request.user.id,
+      listId,
+      taskId,
+      payload,
     );
   }
 }
