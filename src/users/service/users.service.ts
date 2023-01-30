@@ -179,4 +179,16 @@ export class UsersService {
       },
     );
   }
+
+  async deleteOneTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    taskId: number,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    const task = await this.verifyTaskBelongsToList(list, taskId);
+    return await this.tasksRepository.softDelete(task.id);
+  }
 }

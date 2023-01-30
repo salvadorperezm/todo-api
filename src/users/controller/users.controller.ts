@@ -141,4 +141,20 @@ export class UsersController {
       payload,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':userId/lists/:listId/tasks/:taskId')
+  deleteOneTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Request() request,
+  ) {
+    return this.usersService.deleteOneTask(
+      userId,
+      request.user.id,
+      listId,
+      taskId,
+    );
+  }
 }
