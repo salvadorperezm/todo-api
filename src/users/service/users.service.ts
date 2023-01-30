@@ -50,6 +50,18 @@ export class UsersService {
     return await this.listsRepository.findOne(listId);
   }
 
+  async verifyTaskBelongsToList(list: List, taskId: number) {
+    const task = await this.tasksRepository.findOne(taskId, {
+      relations: ['list'],
+    });
+
+    if (!task || task.list.id !== list.id) {
+      throw new UnauthorizedException();
+    }
+
+    return await this.tasksRepository.findOne(taskId);
+  }
+
   async createUser(payload: CreateUserDto) {
     const existingUser = await this.findUserByUsername(payload.username);
 
@@ -124,5 +136,25 @@ export class UsersService {
     const list = await this.verifyListBelongsToUser(user, listId);
     const newTask = this.tasksRepository.create({ ...payload, list });
     return await this.tasksRepository.save(newTask);
+  }
+
+  async getAllTasksByList(userId: number, requestId: number, listId: number) {
+    const user = await this.verifyUser(userId, requestId);
+    await this.verifyListBelongsToUser(user, listId);
+    const relations = await this.listsRepository.findOne(listId, {
+      relations: ['tasks'],
+    });
+    return relations.tasks;
+  }
+
+  async getOneTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    taskId: number,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    return await this.verifyTaskBelongsToList(list, taskId);
   }
 }

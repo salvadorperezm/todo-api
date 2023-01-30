@@ -96,4 +96,30 @@ export class UsersController {
       payload,
     );
   }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/lists/:listId/tasks')
+  getAllTasksByList(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Request() request,
+  ) {
+    return this.usersService.getAllTasksByList(userId, request.user.id, listId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/lists/:listId/tasks/:taskId')
+  getOneTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Request() request,
+  ) {
+    return this.usersService.getOneTask(
+      userId,
+      request.user.id,
+      listId,
+      taskId,
+    );
+  }
 }
