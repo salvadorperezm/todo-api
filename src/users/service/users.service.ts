@@ -6,6 +6,7 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { CreateListDto } from 'src/lists/dto/lists.dto';
+import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
 import { List } from 'src/lists/entity/lists.entity';
 import { hashPassword } from 'src/utils/bcrypt';
 import { Repository } from 'typeorm';
@@ -35,7 +36,7 @@ export class UsersService {
     return await this.usersRepository.findOne(userId);
   }
 
-  async verifyList(user: User, listId: number) {
+  async verifyListBelongsToUser(user: User, listId: number) {
     const list = await this.listsRepository.findOne(listId, {
       relations: ['user'],
     });
@@ -83,6 +84,24 @@ export class UsersService {
 
   async getOneList(userId: number, requestId: number, listId: number) {
     const user = await this.verifyUser(userId, requestId);
-    return await this.verifyList(user, listId);
+    return await this.verifyListBelongsToUser(user, listId);
+  }
+
+  async updateOneList(
+    userId: number,
+    requestId: number,
+    listId: number,
+    payload: UpdateListDto,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    return await this.listsRepository.update(
+      {
+        id: list.id,
+      },
+      {
+        title: payload.title,
+      },
+    );
   }
 }

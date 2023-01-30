@@ -4,12 +4,14 @@ import {
   Get,
   Param,
   ParseIntPipe,
+  Patch,
   Post,
   Request,
   UseGuards,
 } from '@nestjs/common';
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateListDto } from 'src/lists/dto/lists.dto';
+import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
 import { CreateUserDto } from '../dto/users.dto';
 import { UsersService } from '../service/users.service';
 
@@ -49,5 +51,21 @@ export class UsersController {
     @Request() request,
   ) {
     return this.usersService.getOneList(userId, request.user.id, listId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':userId/lists/:listId')
+  updateOneList(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Request() request,
+    @Body() payload: UpdateListDto,
+  ) {
+    return this.usersService.updateOneList(
+      userId,
+      request.user.id,
+      listId,
+      payload,
+    );
   }
 }
