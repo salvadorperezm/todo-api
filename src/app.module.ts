@@ -7,6 +7,7 @@ import { pgConfigAsync } from './config/postgres.config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { ListsModule } from './lists/lists.module';
+import { TasksModule } from './tasks/tasks.module';
 
 @Module({
   imports: [
@@ -17,6 +18,7 @@ import { ListsModule } from './lists/lists.module';
     UsersModule,
     AuthModule,
     ListsModule,
+    TasksModule,
   ],
   controllers: [AppController],
   providers: [AppService],

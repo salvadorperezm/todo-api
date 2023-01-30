@@ -13,6 +13,8 @@ import {
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateListDto } from 'src/lists/dto/lists.dto';
 import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
+import { CreateTaskDto } from 'src/tasks/dto/task.dto';
+import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
 import { CreateUserDto } from '../dto/users.dto';
 import { UsersService } from '../service/users.service';
 
@@ -78,5 +80,81 @@ export class UsersController {
     @Request() request,
   ) {
     return this.usersService.deleteOneList(userId, request.user.id, listId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userId/lists/:listId/tasks')
+  createTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Request() request,
+    @Body() payload: CreateTaskDto,
+  ) {
+    return this.usersService.createTask(
+      userId,
+      request.user.id,
+      listId,
+      payload,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/lists/:listId/tasks')
+  getAllTasksByList(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Request() request,
+  ) {
+    return this.usersService.getAllTasksByList(userId, request.user.id, listId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Get(':userId/lists/:listId/tasks/:taskId')
+  getOneTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Request() request,
+  ) {
+    return this.usersService.getOneTask(
+      userId,
+      request.user.id,
+      listId,
+      taskId,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Patch(':userId/lists/:listId/tasks/:taskId')
+  updateOneTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Request() request,
+    @Body() payload: UpdateTaskDto,
+  ) {
+    return this.usersService.updateOneTask(
+      userId,
+      request.user.id,
+      listId,
+      taskId,
+      payload,
+    );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':userId/lists/:listId/tasks/:taskId')
+  deleteOneTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Param('taskId', ParseIntPipe) taskId: number,
+    @Request() request,
+  ) {
+    return this.usersService.deleteOneTask(
+      userId,
+      request.user.id,
+      listId,
+      taskId,
+    );
   }
 }

@@ -8,6 +8,9 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateListDto } from 'src/lists/dto/lists.dto';
 import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
 import { List } from 'src/lists/entity/lists.entity';
+import { CreateTaskDto } from 'src/tasks/dto/task.dto';
+import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
+import { Task } from 'src/tasks/entity/tasks.entity';
 import { hashPassword } from 'src/utils/bcrypt';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/users.dto';
@@ -18,6 +21,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
     @InjectRepository(List) private listsRepository: Repository<List>,
+    @InjectRepository(Task) private tasksRepository: Repository<Task>,
   ) {}
 
   async findUserByUsername(username: string) {
@@ -45,6 +49,18 @@ export class UsersService {
       throw new UnauthorizedException();
     }
     return await this.listsRepository.findOne(listId);
+  }
+
+  async verifyTaskBelongsToList(list: List, taskId: number) {
+    const task = await this.tasksRepository.findOne(taskId, {
+      relations: ['list'],
+    });
+
+    if (!task || task.list.id !== list.id) {
+      throw new UnauthorizedException();
+    }
+
+    return await this.tasksRepository.findOne(taskId);
   }
 
   async createUser(payload: CreateUserDto) {
@@ -109,5 +125,70 @@ export class UsersService {
     const user = await this.verifyUser(userId, requestId);
     const list = await this.verifyListBelongsToUser(user, listId);
     return await this.listsRepository.softDelete(list.id);
+  }
+
+  async createTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    payload: CreateTaskDto,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    const newTask = this.tasksRepository.create({ ...payload, list });
+    return await this.tasksRepository.save(newTask);
+  }
+
+  async getAllTasksByList(userId: number, requestId: number, listId: number) {
+    const user = await this.verifyUser(userId, requestId);
+    await this.verifyListBelongsToUser(user, listId);
+    const relations = await this.listsRepository.findOne(listId, {
+      relations: ['tasks'],
+    });
+    return relations.tasks;
+  }
+
+  async getOneTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    taskId: number,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    return await this.verifyTaskBelongsToList(list, taskId);
+  }
+
+  async updateOneTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    taskId: number,
+    payload: UpdateTaskDto,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    const task = await this.verifyTaskBelongsToList(list, taskId);
+    return await this.tasksRepository.update(
+      {
+        id: task.id,
+      },
+      {
+        title: payload.title,
+        isCompleted: payload.isCompleted,
+      },
+    );
+  }
+
+  async deleteOneTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    taskId: number,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    const task = await this.verifyTaskBelongsToList(list, taskId);
+    return await this.tasksRepository.softDelete(task.id);
   }
 }
