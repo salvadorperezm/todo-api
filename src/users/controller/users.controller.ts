@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
@@ -67,5 +68,15 @@ export class UsersController {
       listId,
       payload,
     );
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Delete(':userId/lists/:listId')
+  deleteOneList(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Request() request,
+  ) {
+    return this.usersService.deleteOneList(userId, request.user.id, listId);
   }
 }

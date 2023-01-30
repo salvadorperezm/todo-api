@@ -104,4 +104,10 @@ export class UsersService {
       },
     );
   }
+
+  async deleteOneList(userId: number, requestId: number, listId: number) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    return await this.listsRepository.softDelete(list.id);
+  }
 }
