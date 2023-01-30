@@ -6,6 +6,7 @@ import { ConfigModule } from '@nestjs/config';
 import { pgConfigAsync } from './config/postgres.config';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { ListsModule } from './lists/lists.module';
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { AuthModule } from './auth/auth.module';
     TypeOrmModule.forRootAsync(pgConfigAsync),
     UsersModule,
     AuthModule,
+    ListsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

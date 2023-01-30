@@ -1,27 +1,24 @@
-import { List } from 'src/lists/entity/lists.entity';
+import { User } from 'src/users/entity/users.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToMany,
+  ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'users' })
-export class User {
+@Entity({ name: 'lists' })
+export class List {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
-  username: string;
+  title: string;
 
-  @Column()
-  password: string;
-
-  @OneToMany(() => List, (lists) => lists.user)
-  lists: List[];
+  @ManyToOne(() => User, (user) => user.lists)
+  user: User;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
