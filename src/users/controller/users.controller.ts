@@ -13,6 +13,7 @@ import {
 import { JwtAuthGuard } from 'src/auth/guard/jwt-auth.guard';
 import { CreateListDto } from 'src/lists/dto/lists.dto';
 import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
+import { CreateTaskDto } from 'src/tasks/dto/task.dto';
 import { CreateUserDto } from '../dto/users.dto';
 import { UsersService } from '../service/users.service';
 
@@ -78,5 +79,21 @@ export class UsersController {
     @Request() request,
   ) {
     return this.usersService.deleteOneList(userId, request.user.id, listId);
+  }
+
+  @UseGuards(JwtAuthGuard)
+  @Post(':userId/lists/:listId/tasks')
+  createTask(
+    @Param('userId', ParseIntPipe) userId: number,
+    @Param('listId', ParseIntPipe) listId: number,
+    @Request() request,
+    @Body() payload: CreateTaskDto,
+  ) {
+    return this.usersService.createTask(
+      userId,
+      request.user.id,
+      listId,
+      payload,
+    );
   }
 }

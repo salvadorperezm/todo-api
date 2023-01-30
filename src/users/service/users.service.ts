@@ -8,6 +8,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { CreateListDto } from 'src/lists/dto/lists.dto';
 import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
 import { List } from 'src/lists/entity/lists.entity';
+import { CreateTaskDto } from 'src/tasks/dto/task.dto';
+import { Task } from 'src/tasks/entity/tasks.entity';
 import { hashPassword } from 'src/utils/bcrypt';
 import { Repository } from 'typeorm';
 import { CreateUserDto } from '../dto/users.dto';
@@ -18,6 +20,7 @@ export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
     @InjectRepository(List) private listsRepository: Repository<List>,
+    @InjectRepository(Task) private tasksRepository: Repository<Task>,
   ) {}
 
   async findUserByUsername(username: string) {
@@ -109,5 +112,17 @@ export class UsersService {
     const user = await this.verifyUser(userId, requestId);
     const list = await this.verifyListBelongsToUser(user, listId);
     return await this.listsRepository.softDelete(list.id);
+  }
+
+  async createTask(
+    userId: number,
+    requestId: number,
+    listId: number,
+    payload: CreateTaskDto,
+  ) {
+    const user = await this.verifyUser(userId, requestId);
+    const list = await this.verifyListBelongsToUser(user, listId);
+    const newTask = this.tasksRepository.create({ ...payload, list });
+    return await this.tasksRepository.save(newTask);
   }
 }
