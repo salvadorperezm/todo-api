@@ -1,29 +1,27 @@
-import { Task } from 'src/tasks/entity/tasks.entity';
-import { User } from 'src/users/entity/users.entity';
+import { List } from 'src/lists/entity/lists.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity({ name: 'lists' })
-export class List {
+@Entity({ name: 'tasks' })
+export class Task {
   @PrimaryGeneratedColumn()
   id: number;
 
   @Column()
   title: string;
 
-  @ManyToOne(() => User, (user) => user.lists)
-  user: User;
+  @Column({ name: 'is_completed', default: false })
+  isCompleted: boolean;
 
-  @OneToMany(() => Task, (tasks) => tasks.list)
-  tasks: Task[];
+  @ManyToOne(() => List, (list) => list.tasks)
+  list: List;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;
