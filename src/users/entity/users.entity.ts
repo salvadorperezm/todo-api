@@ -1,4 +1,4 @@
-import { List } from 'src/lists/entity/lists.entity';
+import { Task } from 'src/tasks/entity/tasks.entity';
 import {
   Column,
   CreateDateColumn,
@@ -20,8 +20,8 @@ export class User {
   @Column()
   password: string;
 
-  @OneToMany(() => List, (lists) => lists.user)
-  lists: List[];
+  @OneToMany(() => Task, (tasks) => tasks.user)
+  tasks: Task[];
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

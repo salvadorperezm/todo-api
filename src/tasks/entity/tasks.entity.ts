@@ -1,4 +1,4 @@
-import { List } from 'src/lists/entity/lists.entity';
+import { User } from 'src/users/entity/users.entity';
 import {
   Column,
   CreateDateColumn,
@@ -20,8 +20,8 @@ export class Task {
   @Column({ name: 'is_completed', default: false })
   isCompleted: boolean;
 
-  @ManyToOne(() => List, (list) => list.tasks)
-  list: List;
+  @ManyToOne(() => User, (user) => user.tasks)
+  user: User;
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date;

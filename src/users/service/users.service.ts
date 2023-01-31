@@ -5,9 +5,6 @@ import {
   UnauthorizedException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { CreateListDto } from 'src/lists/dto/lists.dto';
-import { UpdateListDto } from 'src/lists/dto/update-lists.dto';
-import { List } from 'src/lists/entity/lists.entity';
 import { CreateTaskDto } from 'src/tasks/dto/task.dto';
 import { UpdateTaskDto } from 'src/tasks/dto/update-task.dto';
 import { Task } from 'src/tasks/entity/tasks.entity';
@@ -20,7 +17,6 @@ import { User } from '../entity/users.entity';
 export class UsersService {
   constructor(
     @InjectRepository(User) private usersRepository: Repository<User>,
-    @InjectRepository(List) private listsRepository: Repository<List>,
     @InjectRepository(Task) private tasksRepository: Repository<Task>,
   ) {}
 
@@ -33,34 +29,25 @@ export class UsersService {
   }
 
   async verifyUser(userId: number, requestId: number) {
-    if (userId !== requestId) {
+    const user = await this.usersRepository.findOne(userId);
+
+    if (!user || user.id !== requestId) {
       throw new UnauthorizedException();
     }
 
-    return await this.usersRepository.findOne(userId);
+    return user;
   }
 
-  async verifyListBelongsToUser(user: User, listId: number) {
-    const list = await this.listsRepository.findOne(listId, {
+  async verifyTaskBelongsToUser(user: User, taskId: number) {
+    const task = await this.tasksRepository.findOne(taskId, {
       relations: ['user'],
     });
 
-    if (!list || list.user.id !== user.id) {
-      throw new UnauthorizedException();
-    }
-    return await this.listsRepository.findOne(listId);
-  }
-
-  async verifyTaskBelongsToList(list: List, taskId: number) {
-    const task = await this.tasksRepository.findOne(taskId, {
-      relations: ['list'],
-    });
-
-    if (!task || task.list.id !== list.id) {
+    if (!task || user.id !== task.user.id) {
       throw new UnauthorizedException();
     }
 
-    return await this.tasksRepository.findOne(taskId);
+    return task;
   }
 
   async createUser(payload: CreateUserDto) {
@@ -80,95 +67,36 @@ export class UsersService {
     return await this.usersRepository.save(newUser);
   }
 
-  async createList(userId: number, requestId: number, payload: CreateListDto) {
+  async createTask(userId: number, requestId: number, payload: CreateTaskDto) {
     const user = await this.verifyUser(userId, requestId);
-    const newTask = this.listsRepository.create({
-      ...payload,
-      user,
-    });
-    return await this.listsRepository.save(newTask);
-  }
-
-  async getAllLists(userId: number, requestId: number) {
-    const user = await this.verifyUser(userId, requestId);
-    const relations = await this.usersRepository.findOne(user.id, {
-      relations: ['lists'],
-    });
-
-    return relations.lists;
-  }
-
-  async getOneList(userId: number, requestId: number, listId: number) {
-    const user = await this.verifyUser(userId, requestId);
-    return await this.verifyListBelongsToUser(user, listId);
-  }
-
-  async updateOneList(
-    userId: number,
-    requestId: number,
-    listId: number,
-    payload: UpdateListDto,
-  ) {
-    const user = await this.verifyUser(userId, requestId);
-    const list = await this.verifyListBelongsToUser(user, listId);
-    return await this.listsRepository.update(
-      {
-        id: list.id,
-      },
-      {
-        title: payload.title,
-      },
-    );
-  }
-
-  async deleteOneList(userId: number, requestId: number, listId: number) {
-    const user = await this.verifyUser(userId, requestId);
-    const list = await this.verifyListBelongsToUser(user, listId);
-    return await this.listsRepository.softDelete(list.id);
-  }
-
-  async createTask(
-    userId: number,
-    requestId: number,
-    listId: number,
-    payload: CreateTaskDto,
-  ) {
-    const user = await this.verifyUser(userId, requestId);
-    const list = await this.verifyListBelongsToUser(user, listId);
-    const newTask = this.tasksRepository.create({ ...payload, list });
+    const newTask = this.tasksRepository.create({ ...payload, user });
     return await this.tasksRepository.save(newTask);
   }
 
-  async getAllTasksByList(userId: number, requestId: number, listId: number) {
+  async getAllTasks(userId: number, requestId: number) {
     const user = await this.verifyUser(userId, requestId);
-    await this.verifyListBelongsToUser(user, listId);
-    const relations = await this.listsRepository.findOne(listId, {
+    const relations = await this.usersRepository.findOne(user.id, {
       relations: ['tasks'],
     });
+
     return relations.tasks;
   }
 
-  async getOneTask(
-    userId: number,
-    requestId: number,
-    listId: number,
-    taskId: number,
-  ) {
+  async getOneTask(userId: number, requestId: number, taskId: number) {
     const user = await this.verifyUser(userId, requestId);
-    const list = await this.verifyListBelongsToUser(user, listId);
-    return await this.verifyTaskBelongsToList(list, taskId);
+    await this.verifyTaskBelongsToUser(user, taskId);
+
+    return await this.tasksRepository.findOne(taskId);
   }
 
   async updateOneTask(
     userId: number,
     requestId: number,
-    listId: number,
     taskId: number,
     payload: UpdateTaskDto,
   ) {
     const user = await this.verifyUser(userId, requestId);
-    const list = await this.verifyListBelongsToUser(user, listId);
-    const task = await this.verifyTaskBelongsToList(list, taskId);
+    const task = await this.verifyTaskBelongsToUser(user, taskId);
     return await this.tasksRepository.update(
       {
         id: task.id,
@@ -180,15 +108,9 @@ export class UsersService {
     );
   }
 
-  async deleteOneTask(
-    userId: number,
-    requestId: number,
-    listId: number,
-    taskId: number,
-  ) {
+  async deleteOneTask(userId: number, requestId: number, taskId: number) {
     const user = await this.verifyUser(userId, requestId);
-    const list = await this.verifyListBelongsToUser(user, listId);
-    const task = await this.verifyTaskBelongsToList(list, taskId);
+    const task = await this.verifyTaskBelongsToUser(user, taskId);
     return await this.tasksRepository.softDelete(task.id);
   }
 }
