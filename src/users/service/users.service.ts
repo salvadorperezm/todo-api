@@ -79,7 +79,11 @@ export class UsersService {
       relations: ['tasks'],
     });
 
-    return relations.tasks;
+    const tasks = relations.tasks;
+
+    tasks.sort((currentValue, nextValue) => currentValue.id - nextValue.id);
+
+    return tasks;
   }
 
   async getOneTask(userId: number, requestId: number, taskId: number) {
